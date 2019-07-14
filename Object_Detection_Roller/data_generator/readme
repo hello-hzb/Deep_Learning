@@ -1,6 +1,6 @@
 数据预处理的代码，包括：
 1_png2jpg.py            ：png格式图片转jpg格式
-1_rename_file.py	      ：重命名文件夹下的文件
+1_rename_file.py        ：重命名文件夹下的文件
 2_xml_rw.py             ：xml文件的读写修改
 3_xml2csv.py            ：xml文件中的数据转csv文件存储
 4_generate_tfrecord.py  ：生成tfrecord文件
