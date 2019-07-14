@@ -1,3 +1,5 @@
+开发流程参考关于Tensorflow运行object detection API.txt
+其他代码说明如下
 数据预处理的代码，包括：
 1_png2jpg.py            ：png格式图片转jpg格式
 1_rename_file.py        ：重命名文件夹下的文件
