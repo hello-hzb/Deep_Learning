@@ -1,0 +1,118 @@
+object detection
+现在各个深度学习框架对目标检测这一类常用应用做了一些封装，提供了一系列快速开发的API，用户不需要自己逐层搭建网络，采用公开数据及对经典目标检测模型进行训练，并将模型公开提供给用户使用。我所知的有tensorflow object detection API和paddlepaddle object detection API。
+本文档使用tensorflow 目标检测API进行开发，tensorflow目前支持windows和ubuntu系统，建议使用ubuntu，可以少踩一些坑。官方提供了一些文档，但是还是让人有点不知如何下手，这里对本人进行开发的流程做整理，对于官方文档有的内容进提供文档路径，不做太多的介绍
+
+
+1.上github下载tensorflow model源码：
+	git clone xxxxxxxxxxxxxxxxxx
+************************************************************************************************************************************************
+2.安装环境
+	models文件夹下是tensorflow提供的一系列demo，目标检测demo路径
+		models/research/object_detection。
+	环境安装参考文档路径：
+		models/research/object_detection/g3doc/installation.md
+	参考该文档即可安装好相关环境，确保最后一步测试通过。
+	注意点：
+		a.tensorflow的版本是1.12以上哦，但是不知道是否支持2.0版本以上
+		b.pip方式安装cython时安装路径可能不正确，导致后续进行COCO API安装失败；
+		解决方法：采用源码安装，下载源码后找到setup.py文件，执行python setup.py install 即可
+************************************************************************************************************************************************
+3.运行demo
+	使用jupyter运行
+		models/research/object_detection/object_detection_tutorial.ipynb，
+	这个代码是tf官方提供的inference demo，直接运行可以看到两张测试图像的目标检测效果，后续训练我们自己的模型后，也可以用这个代码进行推理过程的demo
+	注意点：	
+		a.直接使用jupyter可能跑不同，提示numpy库找不到的问题，建议将改代码转成py代码，使用terminal进行运行，导出方式：
+			a.在demo路径下执行jupyter notebook, 打开jupyter，并双击object_detection_tutorial.ipynb；
+			b.File->Downloads as->python;
+		b.导成py文件也可能会报get_ipython().magic相关错误，注释掉即可；
+		c.运行结束不显示图片检测效果，是因为原来代码中没有图像显示保持的指令，在执行测试的代码段显示图片的指令plt.imshow(image_np)下添加  plt.show()，可以使图像显示保持。
+************************************************************************************************************************************************
+4.准备训练数据
+	(1)如果是新手，想先跑通API的话，参考下列文档，下载公开数据集进行训练。目前常见的模型预训练都是使用数据集较大的COCO数据集，文档中是利用COCO数据集预训练模型训练公开数据集Pascal，参考该文档运行create_pascal_tf_record.py可以将数据集转成tfrecord格式；
+	models/research/object_detection/g3doc/preparing_inputs.md
+	(2)若准备训练自己的数据集，此时准备训练数据的步骤和上述就不一样，因为公开数据集根据一个统一的标准对文件层级结构，文件名，及标签文件结构进行定义，我们自己的数据集不一定符合这个标准，无法使用create_pascal_tf_record.py直接转格式，需要自己转换格式，步骤如下：
+		a.将标签xml文件转成csv文件，参考本人代码/data_generator/3_xml2csv.py进行标签格式转换；
+		b.将jpg格式图像和csv格式的标签进行打包，输出tfrecord文件，参考本人代码/data_generator/4_generate_tfrecord.py。除了标签和图像外，还需要label map文件----pbtxt文件，其定义方式可以参考
+		object_detection/data/pascal_label_map.pbtxt
+	注意点：
+		a.跑demo或者别人的代码的时候要看一下是否有输入参数需要修改，如输入的文件路径，文件名，输出文件路径等
+************************************************************************************************************************************************
+5.运行模型训练API
+	参考文档
+		/home/ubuntu/SSD/models/research/object_detection/g3doc/running_locally.md
+	API设计是基于python2，对于运行环境是python3的时候运行demo都会出错，此时需要耐心查找问题的源头，tf做的比较好，一些API的源代码是带xxx_test.py测试源码，可以运行测试代码来进一步搜索错误源头和解决方案。文档中介绍的比较简单，对一些细节未介绍原因或者其作用，这里做一些解释。
+	(1)文档中推荐以下文件结构存储模型训练的各个文件，其说明如下：
+	+data                             # tf models自带文件夹，用来存储训练所需的数据
+	  -label_map file                 # 待训练数据集的labelmap文件----pbtxt文件，自己的数据集需要自己参考公开数据集编写自己的pbtxt文件，其实就是label类型，很好理解
+	  -train TFRecord file            # 上一步生成的待训练数据
+	  -eval TFRecord file             # 上一步生成的评价数据集
+	+models                           # tf models自带文件夹，用来存储预训练模型和本地训练模型
+	  + model                         # 文件夹，用户添加的用来存储本地训练的配置文件和训练结果
+		-pipeline config file         # config文件，配置模型训练的epoch、学习率、损失函数等，models/research/object_detection/samples/configs有很多常见模型的训练配置文件
+		+train                        # 文件夹，存储模型训练的结果，如checkpoint、文件等
+		+eval                         # 暂时未知，该文件夹为空
+	
+	(2)
+	config文件参考：models/research/object_detection/samples/configs
+	label map pbtxt文件参考：models/research/object_detection/data/
+
+	(3)文档中运行model_main.py需要在terminal中输入若干参数，若觉得麻烦，可以直接在代码中写入参数中。外部的参数最终是被代码中下列指令识别，其中PATH_TO_OUTPUT_MODEL、TRAIN_STEP_NUMBER为该参数的默认值，可以直接将外部要传入的参数写入参数默认值中，就不需要在terminal传入参数。
+	flags.DEFINE_string(
+		'model_dir', 'PATH_TO_OUTPUT_MODEL', 'Path to output model directory '
+		'where event and checkpoint files will be written.')
+	flags.DEFINE_integer('num_train_steps', TRAIN_STEP_NUMBER, 'Number of train steps.')
+
+	(4)预训练模型可以查阅：/models/research/object_detection/g3doc/detection_model_zoo.md
+
+	(5)model_main.py源码不会把训练过程的结果打印出来，可以在源码main函数前加入以下指令：
+	tf.logging.set_verbosity(tf.logging.INFO) 
+
+	(6)步骤5中加入数据训练过程信息打印之后，打印信息的物理含义（待后续完善，目前还不大确定）：**********************************
+	Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.418
+	Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.865
+	Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.316
+	Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+	Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.279
+	Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.483
+	Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.115
+	Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.541
+	Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.553
+	Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
+	Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.412
+	可以参考以下两个链接，但是不一定能看懂，这些参数应该是目标检测竞赛定义，网友的解释也是乱七八糟的，写出来的东西和没写似的，可以去竞赛官网了解，或者结合算法进行理解	
+	https://blog.csdn.net/u014734886/article/details/78831884
+	https://blog.csdn.net/JNingWei/article/details/80005630
+	(5)训练结束后，通过tensorboard查看训练过程的平均精度AP，平均召回率AR，损失值Loss以及实际图像中的目标检测效果。
+
+************************************************************************************************************************************************
+6.模型导出
+	参考文档/models/research/object_detection/g3doc/exporting_models.md
+	若安装文档建议的文件结构存储训练结果，模型文件将存储在/models/research/object_detection/models/model/train中。
+	运行export_inference_graph.py转模型的时候，参数的传递容易错误，需要好好理解以下结果参数的含义及应该以什么形式传入。
+	导出成功后获得pb文件为模型文件，虽然是个二进制文件，不能直观看到包含的信息，个人猜测是包含模型参数和模型结果。
+************************************************************************************************************************************************
+7.查看推理效果
+	步骤3中将inference demo导出为py文件/models/research/object_detection/object_detection_tutorial.py
+	修改源代码：
+	(1)模型pb文件路径；
+	(2)label map----pbtxt文件路径；
+	(3)待测试的图片路径；
+	(4)源代码原来设计是能够自动下载网上公开模型进行推理，本地推理时需要将下载网上模型的代码注释。
+
+
+
+
+下方为一些参考的博客链接
+https://blog.csdn.net/qq_38593211/article/details/82823255
+https://www.cnblogs.com/zongfa/p/9663649.html
+https://www.jianshu.com/p/86894ccaa407
+
+
+https://www.jianshu.com/p/86894ccaa407
+https://www.cnblogs.com/zongfa/p/9663649.html
+https://blog.csdn.net/qq_24946843/article/details/88181686
+https://blog.csdn.net/qq_38593211/article/details/82822162
+https://blog.csdn.net/qq_38593211/article/details/82823255
+https://www.jianshu.com/p/865daab8b834
+https://www.jianshu.com/p/dd0d27a9e776
