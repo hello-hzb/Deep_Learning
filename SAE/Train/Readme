@@ -1,0 +1,54 @@
+文件说明：
+0_sae_multi_gpu：双GPU进行单个模型的训练，但是效果不好
+
+1_sae_with_pretrain：逐层预训练设计
+
+2_sae_no_pretrain：无逐层预训练设计
+    1_sae_local_win.py：使用局部窗进行异常目标检查
+    2_sae_recon_err.py：使用重建误差进行异常目标检查
+    3_write_variable.py：获得模型参数并写成头文件
+
+
+3_conv_sae：卷积SAE的设计
+    1_conv_sae_local_win.py：使用局部窗进行异常目标检查
+    2_conv_sae_recon_err.py：使用重建误差进行异常目标检查
+
+4_TensorRT_sae：采用TensorRT进行推理加速器设计
+    1_sae_tf_to_trt.py：SAE进行TensorRT设计，包括Python版本的推理和模型的导出
+    2_sae_cov_tf_to_trt.py：卷积SAE进行TensorRT设计，包括Python版本的推理和模型的导出
+    3_sae_conv_tf_to_trt.py：卷积SAE输入数据方式为NHWC，进行TensorRT设计，包括Python版本的推理和模型的导出
+
+5_TensorRT_demo：官方demo
+
+6_Experiment：实验设计
+    1_sae_placeholder_CPU.py：CPU计算性能测试实验
+    2_sae_placeholder_GPU.py：测试GPU的计算性能
+    3_1_GPU_placeholder.py：单GPU进行超参数寻优设计，但是没有训练到收敛状态
+    4_2_GPU_placeholder.py：双GPU进行寻优设计，但是没有训练到收敛状态
+    5_plane_SAE_RXD.py：SAE算法和RXD算法的对比实验，数据为圣地亚哥机场
+    6_ship_SAE_RXD.py：SAE算法和RXD算法的对比实验，数据为洛杉矶海域
+    7_plane_SAE_RXD_CPU.py：SAE算法和RXD算法的对比实验，数据为圣地亚哥机场，为了画图而复制的代码
+    8_SHIP_SAE_RXD_CPU.py：SAE算法和RXD算法的对比实验，数据为洛杉矶海域，为了画图而复制的代码
+    11_batchsize_experiment.py：单GPU训练到收敛的训练耗时实验
+    12_batchsize_2GPU.py：双GPU训练到收敛的训练耗时实验
+    AUC_plot.py：画ROC曲线代码
+    ship_losangle.py：RXD模型ROC曲线绘制
+
+7_matlab_work：matlab程序，关于RXD设计，采用两幅不同的数据进行测试。
+
+hyper_data：本课题采用的实验数据
+
+no_pretrain：上一版程序
+    1_sae_ad_placeholder.py：placeholder数据输入方式，采用局部窗设计
+    2_sae_conv.py：卷积SAE，采用重建误差进行设计
+    3_sae_ad _placeholder.py：忽略
+    4_sae_ad_placeholder.py：忽略
+    5_sae_ad_placeholder.py：忽略
+    6_sae_conv.py：忽略
+    7_sae_conv.py：忽略
+    conv_sae.py：忽略
+    sae1_placeholder.py：placeholder数据输入方式，
+    sae2_tfrecords.py：将数据转化成tfrecords的形式，效果不好
+    sae3_iterator.py：数据输入采用流水线设计,效果最好
+    sae4_shuffle.py：数据输入采用流水线设计
+    sae5_slice_input.py：数据输入采用流水线设计
