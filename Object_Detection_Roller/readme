@@ -1,0 +1,1 @@
+参考tensorflow object detection进行目标检测算法实现，其中需要将训练数据转换成tfrecord格式，本文件夹内的代码实现数据转换的功能。
